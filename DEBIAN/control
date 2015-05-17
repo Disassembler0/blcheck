@@ -1,0 +1,9 @@
+Package: blcheck
+Version: 1.0.0
+Section: custom
+Priority: optional
+Architecture: all
+Depends: python3, python3-dnspython
+Installed-Size: 8
+Maintainer: Disassembler
+Description: IP and domain blacklist (DNSBL) checker

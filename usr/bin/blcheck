@@ -1,0 +1,265 @@
+#!/usr/bin/python3
+
+import argparse
+import dns.resolver
+import re
+import socket
+import subprocess
+import threading
+import urllib.request
+
+rbls = [
+	'access.redhawk.org',
+	'all.s5h.net',
+	'b.barracudacentral.org',
+	'bl.blocklist.de',
+	'bl.deadbeef.com',
+	'bl.emailbasura.org',
+	'bl.mailspike.net',
+	'bl.spamcannibal.org',
+	'bl.spamcop.net',
+	'bl.spameatingmonkey.net',
+	'bl.tiopan.com',
+	'black.junkemailfilter.com',
+	'blackholes.five-ten-sg.com',
+	'blackholes.wirehub.net',
+	'blacklist.sci.kun.nl',
+	'blacklist.woody.ch',
+	'block.dnsbl.sorbs.net',
+	'blocked.hilli.dk',
+	'bogons.cymru.com',
+	'bsb.empty.us',
+	'cart00ney.surriel.com',
+	'cbl.abuseat.org',
+	'cblless.anti-spam.org.cn',
+	'cdl.anti-spam.org.cn',
+	'combined.abuse.ch',
+	'combined.rbl.msrbl.net',
+	'db.wpbl.info',
+	'dev.null.dk',
+	'dialup.blacklist.jippg.org',
+	'dialups.mail-abuse.org',
+	'dialups.visi.com',
+	'dnsbl.abuse.ch',
+	'dnsbl.anticaptcha.net',
+	'dnsbl.antispam.or.id',
+	'dnsbl.cyberlogic.net',
+	'dnsbl.dronebl.org',
+	'dnsbl.inps.de',
+	'dnsbl.justspam.org',
+	'dnsbl.kempt.net',
+	'dnsbl.sorbs.net',
+	'dnsbl.tornevall.org',
+	'dnsbl-1.uceprotect.net',
+	'dnsbl-2.uceprotect.net',
+	'dnsbl-3.uceprotect.net',
+	'drone.abuse.ch',
+	'duinv.aupads.org',
+	'dul.dnsbl.sorbs.net',
+	'dul.ru',
+	'dyna.spamrats.com',
+	'dynip.rothen.com',
+	'escalations.dnsbl.sorbs.net',
+	'exitnodes.tor.dnsbl.sectoor.de',
+	'hil.habeas.com',
+	'http.dnsbl.sorbs.net',
+	'images.rbl.msrbl.net',
+	'intruders.docs.uu.se',
+	'ip.v4bl.org',
+	'ips.backscatterer.org',
+	'ix.dnsbl.manitu.net',
+	'korea.services.net',
+	'l2.apews.org',
+	'mail-abuse.blacklist.jippg.org',
+	'misc.dnsbl.sorbs.net',
+	'msgid.bl.gweep.ca',
+	'multi.surbl.org',
+	'new.dnsbl.sorbs.net',
+	'no-more-funn.moensted.dk',
+	'noptr.spamrats.com',
+	'ohps.dnsbl.net.au',
+	'old.dnsbl.sorbs.net',
+	'omrs.dnsbl.net.au',
+	'opm.tornevall.org',
+	'orvedb.aupads.org',
+	'osps.dnsbl.net.au',
+	'osrs.dnsbl.net.au',
+	'owfs.dnsbl.net.au',
+	'owps.dnsbl.net.au',
+	'pbl.spamhaus.org',
+	'phishing.rbl.msrbl.net',
+	'probes.dnsbl.net.au',
+	'proxy.bl.gweep.ca',
+	'proxy.block.transip.nl',
+	'psbl.surriel.com',
+	'pss.spambusters.org.ar',
+	'rbl.interserver.net',
+	'rbl.megarbl.net',
+	'rbl.schulte.org',
+	'rbl.snark.net',
+	'rdts.dnsbl.net.au',
+	'recent.dnsbl.sorbs.net',
+	'recent.spam.dnsbl.sorbs.net',
+	'relays.bl.gweep.ca',
+	'relays.bl.kundenserver.de',
+	'relays.nether.net',
+	'residential.block.transip.nl',
+	'ricn.dnsbl.net.au',
+	'rmst.dnsbl.net.au',
+	'rsbl.aupads.org',
+	'sbl.nszones.com',
+	'sbl.spamhaus.org',
+	'sbl-xbl.spamhaus.org',
+	'short.rbl.jp',
+	'smtp.dnsbl.sorbs.net',
+	'socks.dnsbl.sorbs.net',
+	'spam.abuse.ch',
+	'spam.dnsbl.anonmails.de',
+	'spam.dnsbl.sorbs.net',
+	'spam.olsentech.net',
+	'spam.rbl.msrbl.net',
+	'spam.spamrats.com',
+	'spamlist.or.kr',
+	'spamrbl.imp.ch',
+	'spamsources.fabel.dk',
+	'st.technovision.dk',
+	't3direct.dnsbl.net.au',
+	'tor.dnsbl.sectoor.de',
+	'truncate.gbudb.net',
+	'ubl.lashback.com',
+	'ubl.unsubscore.com',
+	'virbl.bit.nl',
+	'virus.rbl.jp',
+	'virus.rbl.msrbl.net',
+	'web.dnsbl.sorbs.net',
+	'wormrbl.imp.ch',
+	'xbl.spamhaus.org',
+	'zen.spamhaus.org',
+	'zombie.dnsbl.sorbs.net'
+	]
+
+rhsbls = [
+	'bsb.empty.us',
+	'dbl.spamhaus.org',
+	'multi.surbl.org',
+	'rhsbl.sorbs.net',
+	'uribl.spameatingmonkey.net'
+	]
+
+max_bl_len = len(max(rbls + rhsbls, key=len))
+re_domain = re.compile('^(?!-)[a-z0-9-]{1,63}(?<!-)(?:\.(?!-)[a-z0-9-]{1,63}(?<!-)){0,125}\.(?!-)(?![0-9]+$)[a-z0-9-]{1,63}(?<!-)$')
+
+def main(args):
+	queries = args.query if args.query else [get_external_ip(), get_domain_name()]
+	is_first_query = True
+	for query in queries:
+		c = Checker(query)
+		c.quiet = args.quiet
+		c.txt = args.txt
+		if is_first_query:
+			is_first_query = False
+		else:
+			print('')
+		print(c.get_result())
+
+def get_external_ip():
+	opener = urllib.request.build_opener()
+	channel = opener.open('http://ipecho.net/plain', timeout=3)
+	return channel.read().decode()
+
+def get_domain_name():
+	return subprocess.check_output(['hostname', '-d'], universal_newlines=True).strip()
+
+class Checker:
+	def __init__(self, query):
+		self.quiet = False
+		self.txt = False
+		self.query = query
+		self.result = {}
+		if self.is_valid_ipv4():
+			self.qtype = 'IPv4'
+		elif self.is_valid_ipv6():
+			self.qtype = 'IPv6'
+		elif self.is_valid_domain():
+			self.qtype = 'domain'
+		else:
+			self.qtype = 'invalid'
+
+	def get_result(self):
+		if self.qtype == 'IPv4' or self.qtype == 'IPv6':
+			self.check_rbls()
+		elif self.qtype == 'domain':
+			self.check_rhsbls()
+		else:
+			return '{} is not a valid query'.format(self.query)
+		output = ['Results for {} {}:'.format(self.qtype, self.query)]
+		if len(self.result) != 0:
+			for bl, status in sorted(self.result.items()):
+				output.append('  {} {}'.format(bl.ljust(max_bl_len), status))
+		else:
+			output.append('  Not listed in any blacklist')
+		return '\n'.join(output)
+
+	def is_valid_ipv4(self):
+		try:
+			socket.inet_pton(socket.AF_INET, self.query)
+		except:
+			return False
+		return True
+
+	def is_valid_ipv6(self):
+		try:
+			socket.inet_pton(socket.AF_INET6, self.query)
+		except:
+			return False
+		return True
+
+	def is_valid_domain(self):
+		return re_domain.match(self.query) != None
+
+	def check_rbls(self):
+		revip = '.'.join(reversed(self.query.split('.' if self.qtype == 'IPv4' else ':')))
+		self.check_bls(revip, rbls)
+
+	def check_rhsbls(self):
+		self.check_bls(self.query, rhsbls)
+
+	def check_bls(self, query, bls):
+		threads = []
+		for bl in bls:
+			t = threading.Thread(target=self.check_bl, args=(query, bl))
+			t.start()
+			threads.append(t)
+		for t in threads:
+			t.join()
+
+	def check_bl(self, query, bl):
+		hostname = '{}.{}.'.format(query, bl)
+		resolver = dns.resolver.Resolver()
+		resolver.timeout = 1
+		resolver.lifetime = 3
+		try:
+			response = resolver.query(hostname, 'A')
+			self.result[bl] = 'LISTED'
+			if self.txt:
+				try:
+					response = resolver.query(hostname, 'TXT')
+					self.result[bl] += ' - {}'.format(response[0].to_text())
+				except:
+					pass
+		except dns.resolver.Timeout:
+			if not self.quiet:
+				self.result[bl] = 'Timeout'
+		except dns.resolver.NoNameservers:
+			if not self.quiet:
+				self.result[bl] = 'Unavailable'
+		except:
+			if not self.quiet:
+				self.result[bl] = 'OK'
+
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Disassembler\'s IP and domain blacklist (DNSBL) checker')
+	parser.add_argument('-q', '--quiet', action='store_true', help='Quiet mode. Prints only listed addresses.')
+	parser.add_argument('-t', '--txt', action='store_true', help='Prints associated TXT record, if any.')
+	parser.add_argument('query', nargs='*', help='Specifies checked IP or domain. If not given, tries to determine host\'s external IP and domain.')
+	main(parser.parse_args())
