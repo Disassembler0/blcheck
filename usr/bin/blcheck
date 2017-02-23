@@ -23,7 +23,6 @@ rbls = [
 	'blackholes.five-ten-sg.com',
 	'blackholes.wirehub.net',
 	'blacklist.sci.kun.nl',
-	'blacklist.woody.ch',
 	'block.dnsbl.sorbs.net',
 	'blocked.hilli.dk',
 	'bogons.cymru.com',
@@ -89,7 +88,6 @@ rbls = [
 	'owfs.dnsbl.net.au',
 	'owps.dnsbl.net.au',
 	'pbl.spamhaus.org',
-	'phishing.rbl.msrbl.net',
 	'probes.dnsbl.net.au',
 	'proxy.bl.gweep.ca',
 	'proxy.block.transip.nl',
@@ -123,7 +121,6 @@ rbls = [
 	'spam.dnsbl.anonmails.de',
 	'spam.dnsbl.sorbs.net',
 	'spam.olsentech.net',
-	'spam.rbl.msrbl.net',
 	'spam.spamrats.com',
 	'spamguard.leadmon.net',
 	'spamlist.or.kr',
@@ -172,7 +169,7 @@ def main(args):
 
 def get_external_ip():
 	opener = urllib.request.build_opener()
-	channel = opener.open('http://ipecho.net/plain', timeout=3)
+	channel = opener.open('https://api.ipify.org', timeout=3)
 	return channel.read().decode()
 
 def get_domain_name():
