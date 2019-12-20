@@ -51,7 +51,6 @@ rbls = [
 	'dnsbl.tornevall.org',
 	'drone.abuse.ch',
 	'dsn.rfc-ignorant.org',
-	'duinv.aupads.org',
 	'dul.dnsbl.sorbs.net',
 	'dul.ru',
 	'dyna.spamrats.com',
@@ -77,7 +76,6 @@ rbls = [
 	'old.dnsbl.sorbs.net',
 	'omrs.dnsbl.net.au',
 	'opm.tornevall.org',
-	'orvedb.aupads.org',
 	'osps.dnsbl.net.au',
 	'osrs.dnsbl.net.au',
 	'owfs.dnsbl.net.au',
@@ -91,7 +89,6 @@ rbls = [
 	'query.senderbase.org',
 	'rbl.efnetrbl.org',
 	'rbl.interserver.net',
-	'rbl.megarbl.net',
 	'rbl.schulte.org',
 	'rbl.snark.net',
 	'rbl.spamlab.com',
@@ -105,12 +102,12 @@ rbls = [
 	'residential.block.transip.nl',
 	'ricn.dnsbl.net.au',
 	'rmst.dnsbl.net.au',
-	'rsbl.aupads.org',
 	'sbl-xbl.spamhaus.org',
 	'sbl.nszones.com',
 	'sbl.spamhaus.org',
 	'smtp.dnsbl.sorbs.net',
 	'socks.dnsbl.sorbs.net',
+	'spam.abuse.ch',
 	'spam.dnsbl.anonmails.de',
 	'spam.dnsbl.sorbs.net',
 	'spam.olsentech.net',
@@ -133,7 +130,7 @@ rbls = [
 	'xbl.spamhaus.org',
 	'zen.spamhaus.org',
 	'zombie.dnsbl.sorbs.net',
-	]
+]
 
 rhsbls = [
 	'bsb.empty.us',
@@ -141,7 +138,7 @@ rhsbls = [
 	'multi.surbl.org',
 	'rhsbl.sorbs.net',
 	'uribl.spameatingmonkey.net'
-	]
+]
 
 max_bl_len = len(max(rbls + rhsbls, key=len))
 re_domain = re.compile('^(?!-)[a-z0-9-]{1,63}(?<!-)(?:\.(?!-)[a-z0-9-]{1,63}(?<!-)){0,125}\.(?!-)(?![0-9]+$)[a-z0-9-]{1,63}(?<!-)$')
