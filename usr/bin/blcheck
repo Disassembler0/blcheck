@@ -56,14 +56,12 @@ RBLS = [
     "dyna.spamrats.com",
     "dynip.rothen.com",
     "escalations.dnsbl.sorbs.net",
-    "exitnodes.tor.dnsbl.sectoor.de",
     "hil.habeas.com",
     "http.dnsbl.sorbs.net",
     "httpbl.abuse.ch",
     "images.rbl.msrbl.net",
     "intruders.docs.uu.se",
     "ips.backscatterer.org",
-    "ix.dnsbl.manitu.net",
     "korea.services.net",
     "mail-abuse.blacklist.jippg.org",
     "misc.dnsbl.sorbs.net",
@@ -119,7 +117,6 @@ RBLS = [
     "st.technovision.dk",
     "t3direct.dnsbl.net.au",
     "tor.dan.me.uk",
-    "tor.dnsbl.sectoor.de",
     "truncate.gbudb.net",
     "ubl.lashback.com",
     "ubl.unsubscore.com",
@@ -142,9 +139,9 @@ RHBLS = [
 
 max_bl_len = len(max(RBLS + RHBLS, key=len))
 re_domain = re.compile(
-    "^(?!-)[a-z0-9-]{1,63}(?<!-)"
-    "(?:\.(?!-)[a-z0-9-]{1,63}(?<!-)){0,125}"
-    "\.(?!-)(?![0-9]+$)[a-z0-9-]{1,63}(?<!-)$"
+    r"^(?!-)[a-z0-9-]{1,63}(?<!-)"
+    r"(?:\.(?!-)[a-z0-9-]{1,63}(?<!-)){0,125}"
+    r"\.(?!-)(?![0-9]+$)[a-z0-9-]{1,63}(?<!-)$"
 )
 
 
